@@ -1,4 +1,4 @@
-# FCND - Fixed Wing Project #
+# FCND - Fixed Wing Project
 
 This is the readme for the Udacity Flying Car Nanodegree Fixed Wing Project
 
@@ -11,11 +11,11 @@ For easy navigation throughout this document, here is an outline:
  - [Evaluation](#evaluation)
 
 
-## Development Environment Setup ##
+## Development Environment Setup
 
 Regardless of your development platform, the first step is to download or clone this repository.
 
-### Udacidrone ###
+### Udacidrone
 
 Next you'll need to get the latest version of [Udacidrone](https://udacity.github.io/udacidrone/docs/getting-started.html).
 If you've previously installed Udacidrone, ensure that you are working with version 0.3.4 or later.
@@ -24,17 +24,17 @@ You can update Udacidrone by running the following from the command line:
 
 `pip install -U git+https://github.com/udacity/udacidrone.git`
 
-### Unity Simulation ###
+### Unity Simulation
 
 Finally, download the version of the simulator that's appropriate for your operating system [from this repository](https://github.com/udacity/FCND-FixedWing/releases).
 
 Note: you may need to pass an exception with anti-virus to run the simulator
 
-## Simulator Walkthrough ##
+## Simulator Walkthrough
 
 Now that you have all the code on your computer and the simulator running, let's walk through some of the elements of the code and the simulator itself.
 
-### Fixed Wing UI ###
+### Fixed Wing UI
 
 The simulator interface should look fairly familiar to the Unity quadcopter simulation with a few additions:
 
@@ -42,11 +42,11 @@ The simulator interface should look fairly familiar to the Unity quadcopter simu
 - Scenario menu (explained more below), the simulation will start in the Sandbox mode
 - Throttle setting (displays the throttle setting between 0 (no throttle) and 1 (full throttle)
 
-### Sandbox Mode ###
+### Sandbox Mode
 
 Try flying around in sandbox mode. There are several different flight modes available, you'll start in manual.
 
-#### Manual Mode ####
+#### Manual Mode
 
 You have direct control over the throttle, ailerons, elevators, and rudder. Use the following keyboard commands to control the aircraft:
 
@@ -57,7 +57,7 @@ You have direct control over the throttle, ailerons, elevators, and rudder. Use 
 - W/S: elevator trim (incremental)
 
 
-### Scenario Selection ###
+### Scenario Selection
 
 Click the scenario selection menu to see a drop-down list of possible scenarios. When you select a scenario, the aircraft will be reset to a specified starting location and you will be shown a start-up screen. The start-up screen will describe the scenario task and the evaluation criteria. In the start-up screen, you'll have two options to choose from:
 
@@ -94,7 +94,7 @@ The gains of the control system used internally on the Unity simulation can be t
 ![save](Diagrams/tuning3.PNG)
 
 
-## Python Control ##
+## Python Control
 
 The simulation can also be controlled using a Python script and the Udacidrone API. There are three relevant python files found in the FixedWing project repository:
 
@@ -102,7 +102,7 @@ The simulation can also be controlled using a Python script and the Udacidrone A
 - plane_drone.py: contains PlaneDrone, a sub-class of the Udacidrone drone class with additional commands specific to the fixed wing project
 - fixed_wing_project.py: contains a subclass of PlaneDrone specifically set-up to run the scenarios
 
-### Running a scenario ###
+### Running a scenario
 To run a scenario from Python:
 1. Select the scenario within the Unity simulation
 2. Select the "Run Python Code" button, you should see a "Waiting for Python" message
@@ -137,7 +137,7 @@ Note: there is a known bug where the python may not connect and get stalled tryi
 - The python script should now successfully connect!
 
 
-## The Scenarios ##
+## The Scenarios
 
 You'll be implementing several Python controllers in the plane_control.py in order to complete all the scenarios. The scenarios are divided into 2 categories:
 
@@ -149,34 +149,54 @@ The scenarios within a category will build on one another, so you will need to i
 Prior to completing a scenario, it's suggested that you first use the Unity based controller to tune the gains. If implemented correctly on Python, the Unity controller gains should get close to meeting the objectives of the scenario, although minor tuning may be required.
 
 
-### Longitudinal Scenarios ###
+### Longitudinal Scenarios
 
 The longitudinal scenarios are designed to incrementally implement control loops to command the aircrafts airspeed, pitch, and altitude using the elevator and the throttle. When running these scenarios from Python, a Unity based lateral controller will maintain a near-zero bank and sideslip.
 
-#### Scenario #1: Trim (Unity Only) ####
+#### Scenario #1: Trim (Unity Only)
 
-The objective of this scenario is to find a fixed throttle trim for level flight with no elevator input.
+> The objective of this scenario is to find a fixed throttle trim for level flight with no elevator input.
+> 
+> To achieve success in this scenario two objectives must be met for at least 5 seconds:
+> 
+> - The vertical speed must be less than 0.5 m/s
+> - The airspeed rate must be less than 0.1 m^2/s
 
-To achieve success in this scenario two objectives must be met for at least 5 seconds:
+When running this scenario, one needs to be a _little_ bit cautious. The original README stated that ...
 
-- The vertical speed must be less than 0.5 m/s
-- The airspeed rate must be less than 0.1 m^2/s
+> This scenario will run indefinitely.
 
-This scenario will run indefinitely.
+... and while this is true, the aircraft is headed straight for a mountain. Thanks to computer physics, it will
+bounce off and then continue its flight on no man's land.
 
-Completing this scenario will help find a route estimate for your feed-forward throttle setting.
+Note that in order to complete this task, the simulator needs to start in guided mode
+with the Python script running. After starting, the aircraft will be in a noticeable
+phugoid mode and in order to compensate before the mountain is hit, manual mode
+needs to be activated - this, in turn, crashes the Python script (after this, you
+will need to eventually restart the simulator since new connections will be impossible).
 
-Tips:
+Using the `down` and `up` arrows, the phugoid oscillation can be dampened. Once
+that is done, throttle can be fine-tuned.
+By adjusting the throttle carefully with the `c` and `space` keys,
+I ended up with the following values:
 
-- Try small increments in your throttle
-- If both the airspeed AND altitude are increasing, the throttle is probably too high.
-- If both the airspeed AND altitude are decreasing, the throttle is probably too low.
-- If the airspeed and altitude are opposite from one another, you'll have to wait for the the phugoid mode to damp out.
-- The phugoid oscillations can be very lightly damped, the damping can be assisted by using the elevator controls.
+| Parameter | Value         |
+| --------- | ------------- |
+| Throttle  | **0.6904982** |
+| Pitch     | 0.6570434°    |
+| Airspeed  | 43.84586 m/s  |
 
+Following the original tips:
 
+> Tips:
+>
+> - Try small increments in your throttle
+> - If both the airspeed AND altitude are increasing, the throttle is probably too high.
+> - If both the airspeed AND altitude are decreasing, the throttle is probably too low.
+> - If the airspeed and altitude are opposite from one another, you'll have to wait for the the phugoid mode to damp out.
+> - The phugoid oscillations can be very lightly damped, the damping can be assisted by using the elevator controls.
 
-#### Scenario #2: Altitude Hold ####
+#### Scenario #2: Altitude Hold
 
 ![altitude](Diagrams/altitude_hold.png)
 
@@ -234,7 +254,7 @@ Tips:
 - Finally, increase the integral altitude gain to meet the scenario objective threshold.
  
 
-#### Scenario #3: Airspeed Hold ####
+#### Scenario #3: Airspeed Hold
 
 ![airspeed_hold](Diagrams/airspeed_hold.png)
 
@@ -275,7 +295,7 @@ Tips:
 - If you notice a large contribution from the integral portion of your controller at steady state, adjust your feed-forward throttle setting accordingly. This should allow you to decrease the value of you integral gain (and provide a better dynamic response).
 
 
-#### Scenario #4: Steady Climb ####
+#### Scenario #4: Steady Climb
 
 ![climb](Diagrams/airspeed_pitch_hold.png)
 
@@ -315,7 +335,7 @@ Tips:
 - Finally, increase the integral airspeed gain to meet the scenario objective threshold.
 
 
-### Scenario #5: Longitudinal Challenge ###
+### Scenario #5: Longitudinal Challenge
 
 The objective of this challenge is to successfully fly through a series of virtual gates in the sky. 
 To do this, tune/implement a longitudinal state machine: 
@@ -361,11 +381,11 @@ Tips:
 - The only parameter to tune in the challenge should be the threshold at which to switch between the different modes of control. The altitude hold scenario starts the aircraft 20m below the target altitude, which would be a good starting point for this threshold.
 - Well tuned parameters from the Longitudinal scenarios will help make this challenge less challenging. If you change your control gains for this challenge, return to the scenarios to ensure the new gains meet the objectives of all previous scenarios.
 
-### Lateral/Directional Scenarios ###
+### Lateral/Directional Scenarios
 
 The lateral/directional scenarios are designed to incrementally implement control loops to command the aircrafts airspeed, pitch, and altitude using the elevator and the throttle. When running these scenarios from Python, a Unity based longitudinal controller will maintain altitude and airspeed.
 
-#### Scenario #6: Stabilized Roll Angle ####
+#### Scenario #6: Stabilized Roll Angle
 
 ![roll](Diagrams/roll_loop.png)
 
@@ -407,7 +427,7 @@ Tips:
 - The aircraft should be near symmetric, but if you are seeing a small steady state error near wings level, increase your proportional gain to decrease this error. Do not add an integral term!
 
 
-#### Scenario #7: Coordinated Turn ####
+#### Scenario #7: Coordinated Turn
 
 ![turn](Diagrams/sideslip_hold.PNG)
 
@@ -445,7 +465,7 @@ Tips:
 - Increase the proportional gain to meet the objectives. Increase the integral gain to remove any remaining steady state error.
 - You may not be able to drive the steady state error complete to zero, but the smaller it is, the easier the following scenarios will be.
 
-#### Scenario #8: Constant Course/Yaw Hold ####
+#### Scenario #8: Constant Course/Yaw Hold
 
 ![course](Diagrams/course_hold.png)
 
@@ -489,7 +509,7 @@ Tips:
 - Since there are no disturbances, an integral gain should not be required to complete this scenario but should be included in the final solution. The integral gain will also help complete the following scenarios.
 - The integrator uses a discrete integration technique. The timestep used in the Unity simulation is smaller than the python timestep, therefore you may experience integration issues when moving to the Python simulation. You may need to lower your dependence on the integral term when executing python control (smaller gain) or try a higher order integration method (trapezoidal instead of Euler).
 
-#### Scenario #9: Straight Line Following ####
+#### Scenario #9: Straight Line Following
 
 The objective of this scenario is to tune/design a controller to track the aircraft to the desired line. The line will be defined as an origin point and course. You'll first calculate the crosstrack error from the line and use that to generate a commanded heading (based on an arctan based trajectory towards the line). The infite course approach angle used in the simulation is perpendicular to the line (PI/2), but feel free to play around with different values in your python implementation. The aircraft will start 20 meters to offset from the line.
 
@@ -527,7 +547,7 @@ Tips:
 - Make sure to include the course of the line in your final course command. You will still be able to complete this scenario while forgetting it because the course command is 0 degrees, but it will hurt you in future scenarios.
 - When using the Unity simulation, a blue arrow is provided on the compass heading showing your desired heading angle. If that heading moves faster than the aircraft can change its heading, your line following gain may be too high. If aircraft heading oscillates around that value, you may need to return to the previous scenario and adjust your proportional yaw gain. If the aircraft heading lags behind the blue arrow, you may need to adjust your integral yaw gain in the previous scenario.
  
-#### Scenario #10: Orbit Following ####
+#### Scenario #10: Orbit Following
 
 The objective of this scenario is to tune/design a controller to track the vehicle to a circular orbit. This controller requires two parts. The first generates a course command based on the current radius from the orbit origin and the aircraft heading. The second part calculates the feed-forward roll required for desired turning radius of the orbit (assuming a coordinate turn). Although this scenario is a clockwise orbit, the controller should be able to handle counter clockwise turns also. The aircraft will start with zero roll angle on the orbit. 
 
@@ -585,7 +605,7 @@ Tips:
 - You will not be able to complete this scenario without including the feed-foward term in your course controller
 - When using the Unity simulation, a blue arrow is provided on the compass heading showing your desired heading angle. If that heading moves faster than the aircraft can change its heading, your line following gain may be too high. If aircraft heading oscillates around that value, you may need to return to the previous scenario and adjust your proportional yaw gain. If the aircraft heading lags behind the blue arrow, you may need to adjust your integral yaw gain in the previous scenario.
 
-### Scenario #11: Lateral/Directional Challenge ###
+### Scenario #11: Lateral/Directional Challenge
 
 The objective of this challenge is to successfully fly through a series of virtual gates in the sky. All the positions given in this scenario are relative to the vehicle start location.
 To do this, tune/implement a lateral state machine using the vehicle position and heading to generate a course command and feed-forward roll. Your state machine should include function calls to the straight_line_guidance, orbit_guidance, and coordinated_turn_ff functions:
@@ -638,7 +658,7 @@ Tips:
 - If you having trouble with the orbit segments, did you implement the changes necessary to do a counter clockwise orbit?
 - There are not any gains to tune for this scenario, so if the vehicle seems to be in the correct phase of flight, but you are still not hitting the gates, go back to previous scenarios to exceed the scenario requirements, not just meet minimum requirements.
 
-### Scenario #12: Full 3D Challenge ###
+### Scenario #12: Full 3D Challenge
 
 This challenge is meant to test your longitudinal and lateral controllers working together. Your goal is to control the aircraft between a series of waypoints. In between waypoints, you'll controll the aircraft using a line-following controller. To transition between segments, you'll use an orbit following controller with a 500 meter radius.
 
@@ -709,7 +729,7 @@ A diagram of the whole route is shown below:
 
 ![route](Diagrams/fw_challenge.png)
 
-### Scenario #13: Flying Car Challenge ###
+### Scenario #13: Flying Car Challenge
 
 The goal of this challenge is to take off in VTOL mode from a starting landing pad, transition to fixed wing mode to fly over the terrain, and transition back to VTOL mode to land on the other landing pad.
 Other Landing Pad Location (Relative to starting pad location):
@@ -806,11 +826,11 @@ Q/E: Sideslip command
 
 To transition between Fixed Wing and VTOL press 't'. The aircraft will stabilize to a 0 roll/pitch using the aileron/elevator and zero throttle. At an airspeed of 10 m/s the flying car will transition to Position Hold VTOL Mode.
 
-## Evaluation ##
+## Evaluation
 
 This project does not require a submission and is not evaluated.
 
-### Inconsistent Results ###
+### Inconsistent Results
 
 The scenarios/challenges are evaluated within Unity using the true aircraft position. Due to asynchronous communication between the Python controller and Unity, successive runs of the same scenario with the same controller may yield different results depending on the speed of your machine and/or other processes running on it.
 
